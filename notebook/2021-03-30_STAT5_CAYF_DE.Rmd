@@ -1,0 +1,200 @@
+# STAT5-CA/YF DE
+
+```{r setup, warning=F, message=F}
+library(tidyverse)
+library(tximport)
+library(DESeq2)
+library(EnsDb.Hsapiens.v86)
+library(ggplot2)
+library(openxlsx)
+library(msigdbr)
+library(DT)
+library(fgsea)
+txdb <- EnsDb.Hsapiens.v86
+```
+
+## Load data
+```{r, eval=F}
+# make tx2gene
+k <- keys(txdb, keytype = "TXID")
+tx2gene <- ensembldb::select(txdb, k, "GENEID", "TXID")
+
+# load quant data
+files <- list.files("../processed_data/RNAseq/STAT5_CA_YF_salmon",
+                    pattern = "quant.sf", 
+                    recursive = T, full.names = T)
+pattern <- "^.+(STAT5A_YF_IM|STAT5A_CA|EV_IM|EV)/quant.sf$"
+smi <- data.frame(row.names = sub(pattern, "\\1",files),
+                  condition = sub(pattern, "\\1",files))
+names(files) <- smi$sample_id
+txi <- tximport(files, type = "salmon", tx2gene = tx2gene, ignoreTxVersion = T)
+
+# normalised counts
+dds <- DESeqDataSetFromTximport(txi, colData = smi,
+                                design = ~condition)
+dds <- dds[rowMeans(counts(dds)) > 5, ]
+rlog <- rlog(dds)
+deres <- assay(rlog) %>% as.data.frame()
+deres$ensembl_id <- rownames(rlog)
+rownames(deres) <- NULL
+deres$gene_symbol <- mapIds(txdb, 
+                            keys= deres$ensembl_id, 
+                            keytype = "GENEID", 
+                            column = "SYMBOL")
+deres$L2FC_CA_vs_YFIM <- deres$STAT5A_CA - deres$STAT5A_YF_IM
+deres$L2FC_CA_vs_EV <- deres$STAT5A_CA - deres$EV
+deres$L2FC_YFIM_vs_EV <- deres$STAT5A_YF_IM - deres$EV
+deres$L2FC_EVIM_vs_EV <- deres$EV_IM - deres$EV
+deres <- deres[,c(6,5,7:10,1:4)] %>% arrange(-L2FC_CA_vs_YFIM)
+saveRDS(deres, "../processed_data/RNAseq/STAT5_CA_YF_DE.2021-03-22.rds")
+write.xlsx(deres, "../results/STAT5_CA_YF_DEres.2021-03-22.xlsx",
+           firstRow=T, firstCol=T)
+```
+
+## GSEA
+```{r prep_gse, warning=F, message=F}
+deres <- readRDS("../processed_data/RNAseq/STAT5_CA_YF_DE.2021-03-22.rds")
+# set gene ranks
+comparisons <- colnames(deres)[grep("L2FC", colnames(deres))]
+names(comparisons) <- sub("L2FC_(.+)", "\\1", comparisons)
+gl <- lapply(comparisons, function(comp) {
+  deres[,c("gene_symbol", comp)] %>% 
+    arrange(-!!sym(comp)) %>% 
+    na.omit() %>%
+    deframe()
+})
+# custom pathways
+custom <- list(custom_autophagy = c("ATG10","ATG14","WIPI2","ATG13",
+                                  "ATG16L2","MAP1LC3B","ULK1","ATG4D",
+                                  "BECN1","TFE3","ATG9A","ATG12",
+                                  "ATG2A","ULK3","ATG4A","ATG101",
+                                  "RAB24","TFEB","PIK3C3","ULK2"),
+               custom_catabolism = c("SLC2A1","GPI1","ALDOA","PGK1",
+                                     "ENO1","LDHA","MYC","INSR","HK2","PFKL",
+                                     "PFKP","TPI1","GAPDH","PGAM1","PKM","ME2",
+                                     "GRHPR","ODC1","PFKM","IRS1","BCL6",
+                                     "CPT1A","ABCD1","BECN1","SLC44A1","CHKB",
+                                     "PCYT1A","PCYT1B","MAP1C3B","LIPE",
+                                     "ULK3","ACOX3","WIPI2","ACSS1","ATG4D"))
+# general pathways
+msig <- rbind(msigdbr(category = "H"),
+              msigdbr(category = "C2", subcategory = "CP:REACTOME"),
+              msigdbr(category = "C2", subcategory = "CP:KEGG"),
+              msigdbr(category = "C5")) 
+gs <- split(msig$gene_symbol, msig$gs_name)
+internal_gs <- readRDS("../../resources/public_genesets_Hs.rds")
+# combine & filter
+gs <- c(gs, internal_gs, custom)
+gs <- gs[!grepl(paste0("sperm|xeno|graft|naba|spinal|neuro|sclerosis",
+                       "|tion_of_hscs|photo|leish|diabetes|lupus|ebola",
+                       "|staph|syndrome|myo|nicotin|asthma|thyroid_stim",
+                       "|gastrin|alcohol|nutrient|carcinoma|muscle_contr",
+                       "|metapathway|amyloid|fusion_mutants|circadian"),
+                names(gs), ignore.case = T)]
+```
+
+```{r gsea_run,warning=F, message=F}
+gseres <- lapply(gl, function(x) {
+  fgseaSimple(pathways = gs, stats = x, 
+              nperm = 1000, maxSize = 500) %>%
+    dplyr::filter(lengths(leadingEdge) > 3) %>%
+    arrange(pval)
+})
+wb <- createWorkbook()
+null <- lapply(names(gseres), function(contrast) {
+  gse <- as.data.frame(gseres[[contrast]])
+  addWorksheet(wb, sheetName = contrast)
+  writeData(wb, gse, sheet = contrast, rowNames = F)
+  freezePane(wb, sheet = contrast, firstRow = TRUE, firstCol = TRUE)
+  return(NULL)
+})
+saveWorkbook(wb, "../results/STAT5_CA_YF_DE_fullGSEA.2021-03-22.xlsx", overwrite = T)
+lapply(names(gseres), function(x) {
+  tmp <- gseres[[x]] %>% dplyr::filter(pval < 0.1) %>% dplyr::select(pathway, NES)
+  tmp[,2] <- round(tmp[,2], 3)
+  colnames(tmp)[2] <- x
+  return(tmp) }) %>% 
+  Reduce(f = function(x,y) { merge(x, y, by="pathway") }) %>%
+  arrange(-apply(., 1, var)) %>%
+  mutate(pathway = ifelse(pathway %in% names(internal_gs), pathway,
+                          paste0('<a href=https://www.gsea-msigdb.org/gsea/msigdb/cards/', 
+                                 pathway, '.html>', substr(pathway, 0,30), '</a>'))) %>%
+  DT::datatable(escape  = F, rownames = F,
+                options = list(
+                  scrollX = TRUE))
+```
+
+## Select GSEA
+```{r poi}
+poi <- c("KEGG_JAK_STAT_SIGNALING_PATHWAY",
+         "HALLMARK_MYC_TARGETS_V2",
+         "HALLMARK_UNFOLDED_PROTEIN_RESPONSE",
+         "REACTOME_ONCOGENE_INDUCED_SENESCENCE",
+         "REACTOME_INTRA_GOLGI_TRAFFIC",
+         "custom_autophagy","custom_catabolism",
+         "GO_PROTEIN_LOCALIZATION_TO_PHAGOPHORE_ASSEMBLY_SITE",
+         "GO_PHAGOPHORE_ASSEMBLY_SITE_MEMBRANE",
+         "Staudt_sigDB_BCR_activation",
+         "REACTOME_ATF6_ATF6_ALPHA_ACTIVATES_CHAPERONE_GENES",
+         "HALLMARK_GLYCOLYSIS",
+         "HALLMARK_KRAS_SIGNALING_UP",
+         "HALLMARK_MTORC1_SIGNALING",
+         "Prdm1_repressed_preB")
+```
+
+```{r gseasub, eval=F}
+gsub <- gs[names(gs) %in% poi]
+gseres <- lapply(gl, function(x) {
+  fgseaSimple(pathways = gsub, stats = x, 
+              nperm = 10000, minSize = 10, maxSize = 500) %>%
+    arrange(pval)
+})
+saveRDS(gseres, "../processed_data/RNAseq/STAT5_CA_YF_DE_subGSEA.2021-03-22.rds")
+wb <- createWorkbook()
+null <- lapply(names(gseres), function(contrast) {
+  gse <- as.data.frame(gseres[[contrast]])
+  addWorksheet(wb, sheetName = contrast)
+  writeData(wb, gse, sheet = contrast, rowNames = F)
+  freezePane(wb, sheet = contrast, firstRow = TRUE, firstCol = TRUE) 
+})
+saveWorkbook(wb, "../results/STAT5_CA_YF_DE_subGSEA.2021-03-22.xlsx", overwrite = T)
+```
+
+## GSEA plots
+```{r gseaoplot, fig.width=7, fig.height=4, warning=F, message=F}
+source("../../resources/fsea.R")
+library(rvg)
+library(officer)
+library(cowplot)
+ppt <- read_pptx()
+pl <- lapply(poi, function(path) {
+  pathplots <- lapply(names(gseres), function(contrast) {
+    plot_fgsea(gseres[[contrast]], gl[[contrast]], gs, path) + 
+      ggtitle(contrast) + 
+    theme(plot.title = element_text(size=10))
+  })
+  title <- ggdraw() + draw_label(path)
+  combined <- plot_grid(plotlist = pathplots, align = "vh", ncol = 2)
+  p <- plot_grid(title, combined, ncol = 1, rel_heights = c(0.05, 1))
+  add_slide(x = ppt, layout = "Title and Content", master = "Office Theme") %>%
+    ph_with(value = dml(ggobj = p),
+            location = ph_location(height = 5, width = 9,
+                                   left = 0.25, top = 0.5),
+            bg = "transparent")
+  return(p)
+})
+names(pl) <- poi
+print(ppt, target="../img/STAT5_CA_YF_DE_subGSEAplots.2021-03-22.pptx")
+pl$GO_PHAGOPHORE_ASSEMBLY_SITE_MEMBRANE
+```
+
+## Downloads
+- <a href="../results/STAT5_CA_YF_DEres.2021-03-22.xlsx" download>Differential expression results</a> (xlsx). 
+- <a href="../results/STAT5_CA_YF_DE_fullGSEA.2021-03-22.xlsx" download>Full GSEA results</a> for exploratory analysis (xlsx). 
+- <a href="../results/STAT5_CA_YF_subGSEA.2021-03-22.xlsx" download>GSEA subset</a> for stats on selected pathways (xlsx).
+- <a href="../img/STAT5_CA_YF_subGSEAplots.2021-03-22.pptx" download>GSEA plots</a> (vecotorised pptx).
+
+## Session info
+```{r sessioninfo}
+sessionInfo()
+```

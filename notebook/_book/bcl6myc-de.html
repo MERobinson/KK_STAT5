@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>STAT5 project - Kohei Kume</title>
+  <meta name="description" content="STAT5 project - Kohei Kume" />
+  <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="STAT5 project - Kohei Kume" />
+  <meta property="og:type" content="book" />
+  
+  
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="STAT5 project - Kohei Kume" />
+  
+  
+  
+
+<meta name="author" content="Mark Robinson" />
+
+
+<meta name="date" content="2021-03-05" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+
+<link rel="next" href="icn1-im-de.html"/>
+<script src="libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
+<script src="libs/htmlwidgets-1.5.3/htmlwidgets.js"></script>
+<link href="libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="libs/datatables-binding-0.17/datatables.js"></script>
+<link href="libs/dt-core-1.10.20/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="libs/dt-core-1.10.20/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="libs/dt-core-1.10.20/js/jquery.dataTables.min.js"></script>
+<link href="libs/crosstalk-1.1.1/css/crosstalk.css" rel="stylesheet" />
+<script src="libs/crosstalk-1.1.1/js/crosstalk.min.js"></script>
+
+
+<style type="text/css">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="bcl6myc-de.html"><a href="bcl6myc-de.html"><i class="fa fa-check"></i><b>1</b> BCL6/MYC DE</a><ul>
+<li class="chapter" data-level="1.1" data-path="bcl6myc-de.html"><a href="bcl6myc-de.html#background"><i class="fa fa-check"></i><b>1.1</b> Background</a></li>
+<li class="chapter" data-level="1.2" data-path="bcl6myc-de.html"><a href="bcl6myc-de.html#setup"><i class="fa fa-check"></i><b>1.2</b> Setup</a></li>
+<li class="chapter" data-level="1.3" data-path="bcl6myc-de.html"><a href="bcl6myc-de.html#sample-info"><i class="fa fa-check"></i><b>1.3</b> Sample Info</a></li>
+<li class="chapter" data-level="1.4" data-path="bcl6myc-de.html"><a href="bcl6myc-de.html#de"><i class="fa fa-check"></i><b>1.4</b> DE</a></li>
+<li class="chapter" data-level="1.5" data-path="bcl6myc-de.html"><a href="bcl6myc-de.html#differential-expression"><i class="fa fa-check"></i><b>1.5</b> Differential Expression</a></li>
+<li class="chapter" data-level="1.6" data-path="bcl6myc-de.html"><a href="bcl6myc-de.html#annotate-and-tidy"><i class="fa fa-check"></i><b>1.6</b> Annotate and tidy</a></li>
+<li class="chapter" data-level="1.7" data-path="bcl6myc-de.html"><a href="bcl6myc-de.html#volano-plot"><i class="fa fa-check"></i><b>1.7</b> Volano plot</a></li>
+<li class="chapter" data-level="1.8" data-path="bcl6myc-de.html"><a href="bcl6myc-de.html#session-info"><i class="fa fa-check"></i><b>1.8</b> Session info</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="icn1-im-de.html"><a href="icn1-im-de.html"><i class="fa fa-check"></i><b>2</b> ICN1 IM DE</a><ul>
+<li class="chapter" data-level="2.1" data-path="icn1-im-de.html"><a href="icn1-im-de.html#background-1"><i class="fa fa-check"></i><b>2.1</b> Background</a></li>
+<li class="chapter" data-level="2.2" data-path="icn1-im-de.html"><a href="icn1-im-de.html#setup-1"><i class="fa fa-check"></i><b>2.2</b> Setup</a></li>
+<li class="chapter" data-level="2.3" data-path="icn1-im-de.html"><a href="icn1-im-de.html#sample-info-1"><i class="fa fa-check"></i><b>2.3</b> Sample Info</a></li>
+<li class="chapter" data-level="2.4" data-path="icn1-im-de.html"><a href="icn1-im-de.html#load-and-preprocess-gene-counts"><i class="fa fa-check"></i><b>2.4</b> Load and preprocess gene counts</a></li>
+<li class="chapter" data-level="2.5" data-path="icn1-im-de.html"><a href="icn1-im-de.html#differential-expression-1"><i class="fa fa-check"></i><b>2.5</b> Differential Expression</a></li>
+<li class="chapter" data-level="2.6" data-path="icn1-im-de.html"><a href="icn1-im-de.html#annotate-and-tidy-1"><i class="fa fa-check"></i><b>2.6</b> Annotate and tidy</a></li>
+<li class="chapter" data-level="2.7" data-path="icn1-im-de.html"><a href="icn1-im-de.html#volano-plot-1"><i class="fa fa-check"></i><b>2.7</b> Volano plot</a></li>
+<li class="chapter" data-level="2.8" data-path="icn1-im-de.html"><a href="icn1-im-de.html#gsea"><i class="fa fa-check"></i><b>2.8</b> GSEA</a></li>
+<li class="chapter" data-level="2.9" data-path="icn1-im-de.html"><a href="icn1-im-de.html#session-info-1"><i class="fa fa-check"></i><b>2.9</b> Session info</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">STAT5 project - Kohei Kume</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="header">
+<h1 class="title">STAT5 project - Kohei Kume</h1>
+<p class="author"><em>Mark Robinson</em></p>
+<p class="date"><em>2021-03-05</em></p>
+</div>
+<div id="bcl6myc-de" class="section level1">
+<h1><span class="header-section-number">Section1</span> BCL6/MYC DE</h1>
+<div id="background" class="section level2">
+<h2><span class="header-section-number">1.1</span> Background</h2>
+<p>To characterise the transcriptional programs driven by MYC and BCL6 in B-cells, a dual reporter system was established with GFP-Myc and mCherry-BCL6 in normal mouse pre-B cultured in Il7, and pre-B trasnformed by either BCR-ABL1 or NRAS G12D.</p>
+<p>Note: no mCherry+ population is observed in the BCR-ABL1 condition due to BA driving Myc program &amp; thereby repressing Bcl6.</p>
+</div>
+<div id="setup" class="section level2">
+<h2><span class="header-section-number">1.2</span> Setup</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="bcl6myc-de.html#cb1-1"></a><span class="co"># load libraries</span></span>
+<span id="cb1-2"><a href="bcl6myc-de.html#cb1-2"></a><span class="kw">library</span>(tidyverse)</span>
+<span id="cb1-3"><a href="bcl6myc-de.html#cb1-3"></a><span class="kw">library</span>(tximport)</span>
+<span id="cb1-4"><a href="bcl6myc-de.html#cb1-4"></a><span class="kw">library</span>(DESeq2)</span>
+<span id="cb1-5"><a href="bcl6myc-de.html#cb1-5"></a><span class="kw">library</span>(EnsDb.Mmusculus.v79)</span>
+<span id="cb1-6"><a href="bcl6myc-de.html#cb1-6"></a>txdb &lt;-<span class="st"> </span>EnsDb.Mmusculus.v79</span>
+<span id="cb1-7"><a href="bcl6myc-de.html#cb1-7"></a>  </span>
+<span id="cb1-8"><a href="bcl6myc-de.html#cb1-8"></a><span class="co"># make tx2gene</span></span>
+<span id="cb1-9"><a href="bcl6myc-de.html#cb1-9"></a>k &lt;-<span class="st"> </span><span class="kw">keys</span>(txdb, <span class="dt">keytype =</span> <span class="st">&quot;TXID&quot;</span>)</span>
+<span id="cb1-10"><a href="bcl6myc-de.html#cb1-10"></a>tx2gene &lt;-<span class="st"> </span><span class="kw">select</span>(txdb, k, <span class="st">&quot;GENEID&quot;</span>, <span class="st">&quot;TXID&quot;</span>)</span></code></pre></div>
+</div>
+<div id="sample-info" class="section level2">
+<h2><span class="header-section-number">1.3</span> Sample Info</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="bcl6myc-de.html#cb2-1"></a><span class="kw">library</span>(DT)</span>
+<span id="cb2-2"><a href="bcl6myc-de.html#cb2-2"></a>files &lt;-<span class="st"> </span><span class="kw">list.files</span>(<span class="st">&quot;../processed_data/RNAseq/BCL6_MYC_salmon&quot;</span>, <span class="dt">pattern =</span> <span class="st">&quot;quant.sf&quot;</span>, </span>
+<span id="cb2-3"><a href="bcl6myc-de.html#cb2-3"></a>                    <span class="dt">recursive =</span> T, <span class="dt">full.names =</span> T)</span>
+<span id="cb2-4"><a href="bcl6myc-de.html#cb2-4"></a>pattern &lt;-<span class="st"> &quot;^.+/XLR[0-9]+_(([A-Za-z]+)_([A-Za-z]+)_(rep[0-9]+))/quant.sf$&quot;</span></span>
+<span id="cb2-5"><a href="bcl6myc-de.html#cb2-5"></a>smi &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">sample_id =</span> <span class="kw">sub</span>(pattern, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">1&quot;</span>,files),</span>
+<span id="cb2-6"><a href="bcl6myc-de.html#cb2-6"></a>                  <span class="dt">condition =</span> <span class="kw">sub</span>(pattern, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">2_</span><span class="ch">\\</span><span class="st">3&quot;</span>,files),</span>
+<span id="cb2-7"><a href="bcl6myc-de.html#cb2-7"></a>                  <span class="dt">replicate =</span> <span class="kw">sub</span>(pattern, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">4&quot;</span>,files),</span>
+<span id="cb2-8"><a href="bcl6myc-de.html#cb2-8"></a>                  <span class="dt">path =</span> files)</span>
+<span id="cb2-9"><a href="bcl6myc-de.html#cb2-9"></a>smi <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">arrange</span>(sample_id) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb2-10"><a href="bcl6myc-de.html#cb2-10"></a><span class="st">  </span>DT<span class="op">::</span><span class="kw">datatable</span>(<span class="dt">escape  =</span> F, <span class="dt">rownames =</span> F,</span>
+<span id="cb2-11"><a href="bcl6myc-de.html#cb2-11"></a>                <span class="dt">colnames =</span> <span class="kw">c</span>(<span class="st">&quot;Sample ID&quot;</span>, <span class="st">&quot;Condition&quot;</span>, <span class="st">&quot;Replicate&quot;</span>, <span class="st">&quot;File Path&quot;</span>),</span>
+<span id="cb2-12"><a href="bcl6myc-de.html#cb2-12"></a>                <span class="dt">options =</span> <span class="kw">list</span>(</span>
+<span id="cb2-13"><a href="bcl6myc-de.html#cb2-13"></a>                  <span class="dt">columnDefs =</span> <span class="kw">list</span>(<span class="kw">list</span>(</span>
+<span id="cb2-14"><a href="bcl6myc-de.html#cb2-14"></a>                        <span class="dt">targets =</span> <span class="dv">3</span>,</span>
+<span id="cb2-15"><a href="bcl6myc-de.html#cb2-15"></a>                        <span class="dt">render =</span> <span class="kw">JS</span>(</span>
+<span id="cb2-16"><a href="bcl6myc-de.html#cb2-16"></a>                          <span class="st">&quot;function(data, type, row, meta) {&quot;</span>,</span>
+<span id="cb2-17"><a href="bcl6myc-de.html#cb2-17"></a>                          <span class="st">&quot;return type === &#39;display&#39; &amp;&amp; data.length &gt; 35 ?&quot;</span>,</span>
+<span id="cb2-18"><a href="bcl6myc-de.html#cb2-18"></a>                          <span class="st">&quot;&#39;&lt;span title=</span><span class="ch">\&quot;</span><span class="st">&#39; + data + &#39;</span><span class="ch">\&quot;</span><span class="st">&gt;&#39; + data.substr(0, 35) + &#39;...&lt;/span&gt;&#39; : data;&quot;</span>,</span>
+<span id="cb2-19"><a href="bcl6myc-de.html#cb2-19"></a>                          <span class="st">&quot;}&quot;</span>)))</span>
+<span id="cb2-20"><a href="bcl6myc-de.html#cb2-20"></a>                ), <span class="dt">callback =</span> <span class="kw">JS</span>(<span class="st">&#39;table.page(3).draw(false);&#39;</span>))</span></code></pre></div>
+<div id="htmlwidget-16009c405e14608e96de" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-16009c405e14608e96de">{"x":{"filter":"none","data":[["BA_DN_rep1","BA_DN_rep2","BA_DN_rep3","BA_GFPpos_rep1","BA_GFPpos_rep2","BA_GFPpos_rep3","Nras_Cherrypos_rep1","Nras_Cherrypos_rep2","Nras_Cherrypos_rep3","Nras_DN_rep1","Nras_DN_rep2","Nras_DN_rep3","Nras_GFPpos_rep1","Nras_GFPpos_rep2","Nras_GFPpos_rep3","preB_Cherrypos_rep1","preB_Cherrypos_rep2","preB_Cherrypos_rep3","preB_DN_rep1","preB_DN_rep2","preB_DN_rep3","preB_GFPpos_rep1","preB_GFPpos_rep4","preB_GFPpos_rep5"],["BA_DN","BA_DN","BA_DN","BA_GFPpos","BA_GFPpos","BA_GFPpos","Nras_Cherrypos","Nras_Cherrypos","Nras_Cherrypos","Nras_DN","Nras_DN","Nras_DN","Nras_GFPpos","Nras_GFPpos","Nras_GFPpos","preB_Cherrypos","preB_Cherrypos","preB_Cherrypos","preB_DN","preB_DN","preB_DN","preB_GFPpos","preB_GFPpos","preB_GFPpos"],["rep1","rep2","rep3","rep1","rep2","rep3","rep1","rep2","rep3","rep1","rep2","rep3","rep1","rep2","rep3","rep1","rep2","rep3","rep1","rep2","rep3","rep1","rep4","rep5"],["../processed_data/RNAseq/BCL6_MYC_salmon/XLR4_BA_DN_rep1/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR5_BA_DN_rep2/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR6_BA_DN_rep3/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR1_BA_GFPpos_rep1/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR2_BA_GFPpos_rep2/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR3_BA_GFPpos_rep3/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR21_Nras_Cherrypos_rep1/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR22_Nras_Cherrypos_rep2/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR23_Nras_Cherrypos_rep3/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR19_Nras_DN_rep1/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR20_Nras_DN_rep2/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR21_Nras_DN_rep3/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR16_Nras_GFPpos_rep1/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR17_Nras_GFPpos_rep2/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR18_Nras_GFPpos_rep3/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR13_preB_Cherrypos_rep1/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR14_preB_Cherrypos_rep2/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR15_preB_Cherrypos_rep3/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR10_preB_DN_rep1/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR11_preB_DN_rep2/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR12_preB_DN_rep3/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR7_preB_GFPpos_rep1/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR25_preB_GFPpos_rep4/quant.sf","../processed_data/RNAseq/BCL6_MYC_salmon/XLR26_preB_GFPpos_rep5/quant.sf"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Sample ID<\/th>\n      <th>Condition<\/th>\n      <th>Replicate<\/th>\n      <th>File Path<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"targets":3,"render":"function(data, type, row, meta) {\nreturn type === 'display' && data.length > 35 ?\n'<span title=\"' + data + '\">' + data.substr(0, 35) + '...<\/span>' : data;\n}"}],"order":[],"autoWidth":false,"orderClasses":false},"callback":"function(table) {\ntable.page(3).draw(false);\n}"},"evals":["options.columnDefs.0.render","callback"],"jsHooks":[]}</script>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="bcl6myc-de.html#cb3-1"></a><span class="kw">names</span>(files) &lt;-<span class="st"> </span>smi<span class="op">$</span>sample_id</span></code></pre></div>
+</div>
+<div id="de" class="section level2">
+<h2><span class="header-section-number">1.4</span> DE</h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="bcl6myc-de.html#cb4-1"></a>txi &lt;-<span class="st"> </span><span class="kw">tximport</span>(files, <span class="dt">type =</span> <span class="st">&quot;salmon&quot;</span>, <span class="dt">tx2gene =</span> tx2gene, <span class="dt">ignoreTxVersion =</span> T)</span>
+<span id="cb4-2"><a href="bcl6myc-de.html#cb4-2"></a>dds &lt;-<span class="st"> </span><span class="kw">DESeqDataSetFromTximport</span>(txi, <span class="dt">colData =</span> smi,</span>
+<span id="cb4-3"><a href="bcl6myc-de.html#cb4-3"></a>                                <span class="dt">design =</span> <span class="op">~</span>condition)</span>
+<span id="cb4-4"><a href="bcl6myc-de.html#cb4-4"></a>dds &lt;-<span class="st"> </span>dds[<span class="kw">rowMeans</span>(<span class="kw">counts</span>(dds)) <span class="op">&gt;</span><span class="st"> </span><span class="dv">5</span>, ]</span>
+<span id="cb4-5"><a href="bcl6myc-de.html#cb4-5"></a>dds &lt;-<span class="st"> </span><span class="kw">DESeq</span>(dds)</span>
+<span id="cb4-6"><a href="bcl6myc-de.html#cb4-6"></a><span class="kw">saveRDS</span>(dds, <span class="st">&quot;../processed_data/RNAseq/BCL6_MYC_dds.2020-03-11.rds&quot;</span>)</span></code></pre></div>
+</div>
+<div id="differential-expression" class="section level2">
+<h2><span class="header-section-number">1.5</span> Differential Expression</h2>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="bcl6myc-de.html#cb5-1"></a>contrasts &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">preB_GFP_vs_DN =</span> <span class="st">&quot;preB_GFPpos_vs_preB_DN&quot;</span>,</span>
+<span id="cb5-2"><a href="bcl6myc-de.html#cb5-2"></a>                  <span class="dt">preB_Cherry_vs_DN =</span> <span class="st">&quot;preB_Cherrypos_vs_preB_DN&quot;</span>,</span>
+<span id="cb5-3"><a href="bcl6myc-de.html#cb5-3"></a>                  <span class="dt">preB_GFP_vs_Cherry =</span> <span class="st">&quot;preB_GFPpos_vs_preB_Cherrypos&quot;</span>,</span>
+<span id="cb5-4"><a href="bcl6myc-de.html#cb5-4"></a>                  <span class="dt">NRAS_GFP_vs_DN =</span> <span class="st">&quot;Nras_GFPpos_vs_Nras_DN&quot;</span>,</span>
+<span id="cb5-5"><a href="bcl6myc-de.html#cb5-5"></a>                  <span class="dt">NRAS_Cherry_vs_DN =</span> <span class="st">&quot;Nras_Cherrypos_vs_Nras_DN&quot;</span>,</span>
+<span id="cb5-6"><a href="bcl6myc-de.html#cb5-6"></a>                  <span class="dt">NRAS_GFP_vs_Cherry =</span> <span class="st">&quot;Nras_GFPpos_vs_Nras_Cherrypos&quot;</span>,</span>
+<span id="cb5-7"><a href="bcl6myc-de.html#cb5-7"></a>                  <span class="dt">BCRABL_GFP_vs_DN =</span> <span class="st">&quot;BA_GFPpos_vs_BA_DN&quot;</span>)</span>
+<span id="cb5-8"><a href="bcl6myc-de.html#cb5-8"></a>deres &lt;-<span class="st"> </span><span class="kw">lapply</span>(contrasts, <span class="cf">function</span>(contrast) {</span>
+<span id="cb5-9"><a href="bcl6myc-de.html#cb5-9"></a>  a &lt;-<span class="st"> </span><span class="kw">sub</span>(<span class="st">&quot;^(.+)_vs_(.+)$&quot;</span>, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">1&quot;</span>, contrast) </span>
+<span id="cb5-10"><a href="bcl6myc-de.html#cb5-10"></a>  b &lt;-<span class="st"> </span><span class="kw">sub</span>(<span class="st">&quot;^(.+)_vs_(.+)$&quot;</span>, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">2&quot;</span>, contrast)</span>
+<span id="cb5-11"><a href="bcl6myc-de.html#cb5-11"></a>  res &lt;-<span class="st"> </span><span class="kw">results</span>(dds, <span class="dt">contrast=</span><span class="kw">c</span>(<span class="st">&quot;condition&quot;</span>, a, b))</span>
+<span id="cb5-12"><a href="bcl6myc-de.html#cb5-12"></a>  <span class="kw">lfcShrink</span>(dds, <span class="dt">contrast =</span> <span class="kw">c</span>(<span class="st">&quot;condition&quot;</span>, a, b), </span>
+<span id="cb5-13"><a href="bcl6myc-de.html#cb5-13"></a>            <span class="dt">res =</span> res, <span class="dt">type =</span> <span class="st">&quot;normal&quot;</span>)</span>
+<span id="cb5-14"><a href="bcl6myc-de.html#cb5-14"></a>})</span></code></pre></div>
+</div>
+<div id="annotate-and-tidy" class="section level2">
+<h2><span class="header-section-number">1.6</span> Annotate and tidy</h2>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="bcl6myc-de.html#cb6-1"></a><span class="kw">library</span>(openxlsx)</span>
+<span id="cb6-2"><a href="bcl6myc-de.html#cb6-2"></a>rlog &lt;-<span class="st"> </span><span class="kw">rlog</span>(dds)</span>
+<span id="cb6-3"><a href="bcl6myc-de.html#cb6-3"></a>genesymb &lt;-<span class="st"> </span><span class="kw">mapIds</span>(txdb, <span class="dt">keys =</span> <span class="kw">rownames</span>(deres[[<span class="dv">1</span>]]), </span>
+<span id="cb6-4"><a href="bcl6myc-de.html#cb6-4"></a>                   <span class="dt">keytype =</span> <span class="st">&quot;GENEID&quot;</span>, <span class="dt">column =</span> <span class="st">&quot;SYMBOL&quot;</span>)</span>
+<span id="cb6-5"><a href="bcl6myc-de.html#cb6-5"></a>wb &lt;-<span class="st"> </span><span class="kw">createWorkbook</span>()</span>
+<span id="cb6-6"><a href="bcl6myc-de.html#cb6-6"></a>deanno &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(contrasts), <span class="cf">function</span>(contrast) {</span>
+<span id="cb6-7"><a href="bcl6myc-de.html#cb6-7"></a>  resdf &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(deres[[contrast]])</span>
+<span id="cb6-8"><a href="bcl6myc-de.html#cb6-8"></a>  resdf[resdf<span class="op">$</span>lfcSE <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>, <span class="dv">5</span><span class="op">:</span><span class="dv">6</span>]</span>
+<span id="cb6-9"><a href="bcl6myc-de.html#cb6-9"></a>  a &lt;-<span class="st"> </span><span class="kw">sub</span>(<span class="st">&quot;^(.+)_vs_(.+)$&quot;</span>, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">1&quot;</span>, contrasts[[contrast]]) </span>
+<span id="cb6-10"><a href="bcl6myc-de.html#cb6-10"></a>  b &lt;-<span class="st"> </span><span class="kw">sub</span>(<span class="st">&quot;^(.+)_vs_(.+)$&quot;</span>, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">2&quot;</span>, contrasts[[contrast]])</span>
+<span id="cb6-11"><a href="bcl6myc-de.html#cb6-11"></a>  resdf &lt;-<span class="st"> </span><span class="kw">cbind</span>(resdf, <span class="kw">assay</span>(rlog)[, <span class="kw">c</span>(<span class="kw">grep</span>(b, <span class="kw">colnames</span>(rlog)),</span>
+<span id="cb6-12"><a href="bcl6myc-de.html#cb6-12"></a>                                        <span class="kw">grep</span>(a, <span class="kw">colnames</span>(rlog)))])</span>
+<span id="cb6-13"><a href="bcl6myc-de.html#cb6-13"></a>  resdf<span class="op">$</span>gene_symbol &lt;-<span class="st"> </span>genesymb</span>
+<span id="cb6-14"><a href="bcl6myc-de.html#cb6-14"></a>  resdf<span class="op">$</span>ensembl_id &lt;-<span class="st"> </span><span class="kw">rownames</span>(resdf)</span>
+<span id="cb6-15"><a href="bcl6myc-de.html#cb6-15"></a>  resdf<span class="op">$</span>baseMean &lt;-<span class="st"> </span><span class="kw">log2</span>(resdf<span class="op">$</span>baseMean)</span>
+<span id="cb6-16"><a href="bcl6myc-de.html#cb6-16"></a>  resdf[,<span class="kw">paste0</span>(<span class="st">&quot;av_&quot;</span>, b)] &lt;-<span class="st"> </span><span class="kw">rowMeans</span>(<span class="kw">assay</span>(rlog)[, <span class="kw">grep</span>(b, <span class="kw">colnames</span>(rlog))])</span>
+<span id="cb6-17"><a href="bcl6myc-de.html#cb6-17"></a>  resdf[,<span class="kw">paste0</span>(<span class="st">&quot;av_&quot;</span>, a)] &lt;-<span class="st"> </span><span class="kw">rowMeans</span>(<span class="kw">assay</span>(rlog)[, <span class="kw">grep</span>(a, <span class="kw">colnames</span>(rlog))])</span>
+<span id="cb6-18"><a href="bcl6myc-de.html#cb6-18"></a>  resdf &lt;-<span class="st"> </span>resdf[<span class="kw">order</span>(resdf<span class="op">$</span>pvalue), <span class="kw">c</span>(<span class="dv">13</span><span class="op">:</span><span class="dv">14</span>,<span class="dv">2</span>,<span class="dv">6</span>,<span class="dv">3</span>,<span class="dv">1</span>,<span class="dv">15</span><span class="op">:</span><span class="dv">16</span>,<span class="dv">7</span><span class="op">:</span><span class="dv">12</span>)]</span>
+<span id="cb6-19"><a href="bcl6myc-de.html#cb6-19"></a>  <span class="kw">colnames</span>(resdf)[<span class="dv">3</span><span class="op">:</span><span class="dv">6</span>] &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;L2FC&quot;</span>,<span class="st">&quot;qval&quot;</span>,<span class="st">&quot;L2FC_SE&quot;</span>,<span class="st">&quot;av_expr&quot;</span>)</span>
+<span id="cb6-20"><a href="bcl6myc-de.html#cb6-20"></a>  <span class="kw">addWorksheet</span>(wb, <span class="dt">sheetName =</span> contrast)</span>
+<span id="cb6-21"><a href="bcl6myc-de.html#cb6-21"></a>  <span class="kw">writeData</span>(wb, resdf, <span class="dt">sheet =</span> contrast, <span class="dt">rowNames =</span> F)</span>
+<span id="cb6-22"><a href="bcl6myc-de.html#cb6-22"></a>  <span class="kw">freezePane</span>(wb, <span class="dt">sheet =</span> contrast, <span class="dt">firstRow =</span> <span class="ot">TRUE</span>, <span class="dt">firstCol =</span> <span class="ot">TRUE</span>) </span>
+<span id="cb6-23"><a href="bcl6myc-de.html#cb6-23"></a>  <span class="kw">return</span>(resdf)</span>
+<span id="cb6-24"><a href="bcl6myc-de.html#cb6-24"></a>})</span>
+<span id="cb6-25"><a href="bcl6myc-de.html#cb6-25"></a><span class="kw">names</span>(deanno) &lt;-<span class="st"> </span><span class="kw">names</span>(contrasts)</span>
+<span id="cb6-26"><a href="bcl6myc-de.html#cb6-26"></a><span class="kw">saveWorkbook</span>(wb, <span class="st">&quot;../results/BCL6_MYC_DE.2020-03-11.xlsx&quot;</span>, <span class="dt">overwrite =</span> T) </span>
+<span id="cb6-27"><a href="bcl6myc-de.html#cb6-27"></a><span class="kw">saveRDS</span>(deanno, <span class="st">&quot;../processed_data/RNAseq/BCL6_MYC_DE.2020-03-11.rds&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="bcl6myc-de.html#cb7-1"></a>dds &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;../processed_data/RNAseq/BCL6_MYC_dds.2020-03-11.rds&quot;</span>)</span>
+<span id="cb7-2"><a href="bcl6myc-de.html#cb7-2"></a>deanno &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;../processed_data/RNAseq/BCL6_MYC_DE.2020-03-11.rds&quot;</span>)</span>
+<span id="cb7-3"><a href="bcl6myc-de.html#cb7-3"></a><span class="kw">lapply</span>(<span class="kw">names</span>(deanno), <span class="cf">function</span>(x) {</span>
+<span id="cb7-4"><a href="bcl6myc-de.html#cb7-4"></a>  y &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(deanno[[x]]) <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">filter</span>(qval <span class="op">&lt;</span><span class="st"> </span><span class="fl">0.05</span>)</span>
+<span id="cb7-5"><a href="bcl6myc-de.html#cb7-5"></a>  <span class="kw">data.frame</span>(<span class="dt">condition =</span> x,</span>
+<span id="cb7-6"><a href="bcl6myc-de.html#cb7-6"></a>             <span class="dt">upreg =</span> y <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">filter</span>(L2FC <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">nrow</span>(),</span>
+<span id="cb7-7"><a href="bcl6myc-de.html#cb7-7"></a>             <span class="dt">dnreg =</span> y <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw">filter</span>(L2FC <span class="op">&lt;</span><span class="st"> </span><span class="dv">-1</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">nrow</span>())</span>
+<span id="cb7-8"><a href="bcl6myc-de.html#cb7-8"></a>}) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">bind_rows</span>() <span class="op">%&gt;%</span><span class="st"> </span>kableExtra<span class="op">::</span><span class="kw">kable</span>()</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+condition
+</th>
+<th style="text-align:right;">
+upreg
+</th>
+<th style="text-align:right;">
+dnreg
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+preB_GFP_vs_DN
+</td>
+<td style="text-align:right;">
+324
+</td>
+<td style="text-align:right;">
+870
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+preB_Cherry_vs_DN
+</td>
+<td style="text-align:right;">
+994
+</td>
+<td style="text-align:right;">
+812
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+preB_GFP_vs_Cherry
+</td>
+<td style="text-align:right;">
+1571
+</td>
+<td style="text-align:right;">
+2250
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NRAS_GFP_vs_DN
+</td>
+<td style="text-align:right;">
+392
+</td>
+<td style="text-align:right;">
+849
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NRAS_Cherry_vs_DN
+</td>
+<td style="text-align:right;">
+593
+</td>
+<td style="text-align:right;">
+201
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NRAS_GFP_vs_Cherry
+</td>
+<td style="text-align:right;">
+964
+</td>
+<td style="text-align:right;">
+1809
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+BCRABL_GFP_vs_DN
+</td>
+<td style="text-align:right;">
+94
+</td>
+<td style="text-align:right;">
+116
+</td>
+</tr>
+</tbody>
+</table>
+<p><a href="../results/BCL6_MYC_DE.2020-03-11.xlsx" download>Download</a> the full differential expression results in excel format.</p>
+</div>
+<div id="volano-plot" class="section level2">
+<h2><span class="header-section-number">1.7</span> Volano plot</h2>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="bcl6myc-de.html#cb8-1"></a>goi &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Egr1&quot;</span>, <span class="st">&quot;Dusp6&quot;</span>, <span class="st">&quot;Cish&quot;</span>, <span class="st">&quot;Hk1&quot;</span>, <span class="st">&quot;Hk2&quot;</span>)</span>
+<span id="cb8-2"><a href="bcl6myc-de.html#cb8-2"></a>plotdat &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">names</span>(deanno), <span class="cf">function</span>(comp) {</span>
+<span id="cb8-3"><a href="bcl6myc-de.html#cb8-3"></a>  x &lt;-<span class="st"> </span>deanno[[comp]]</span>
+<span id="cb8-4"><a href="bcl6myc-de.html#cb8-4"></a>  x<span class="op">$</span>col &lt;-<span class="st"> &quot;B&quot;</span></span>
+<span id="cb8-5"><a href="bcl6myc-de.html#cb8-5"></a>  x[<span class="kw">which</span>(x<span class="op">$</span>qval <span class="op">&lt;</span><span class="st"> </span><span class="fl">0.05</span> <span class="op">&amp;</span><span class="st"> </span>x<span class="op">$</span>L2FC <span class="op">&gt;</span><span class="st"> </span><span class="fl">0.58</span>),]<span class="op">$</span>col &lt;-<span class="st"> &quot;A&quot;</span></span>
+<span id="cb8-6"><a href="bcl6myc-de.html#cb8-6"></a>  x[<span class="kw">which</span>(x<span class="op">$</span>qval <span class="op">&lt;</span><span class="st"> </span><span class="fl">0.05</span> <span class="op">&amp;</span><span class="st"> </span>x<span class="op">$</span>L2FC <span class="op">&lt;</span><span class="st"> </span><span class="fl">-0.58</span>),]<span class="op">$</span>col &lt;-<span class="st"> &quot;C&quot;</span></span>
+<span id="cb8-7"><a href="bcl6myc-de.html#cb8-7"></a>  <span class="cf">if</span> (<span class="kw">any</span>(x<span class="op">$</span>qval <span class="op">&lt;</span><span class="st"> </span><span class="fl">1e-150</span>, <span class="dt">na.rm =</span> T)) x[<span class="kw">which</span>(x<span class="op">$</span>qval<span class="op">&lt;</span><span class="fl">1e-150</span>),]<span class="op">$</span>qval &lt;-<span class="st"> </span><span class="fl">1e-150</span></span>
+<span id="cb8-8"><a href="bcl6myc-de.html#cb8-8"></a>  topg &lt;-<span class="st"> </span><span class="kw">top_n</span>(x, <span class="dv">10</span>, <span class="op">-</span>qval)<span class="op">$</span>gene_symbol</span>
+<span id="cb8-9"><a href="bcl6myc-de.html#cb8-9"></a>  x<span class="op">$</span>label &lt;-<span class="st"> </span><span class="kw">ifelse</span>(x<span class="op">$</span>gene_symbol <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(topg, goi) <span class="op">&amp;</span><span class="st"> </span>x<span class="op">$</span>qval <span class="op">&lt;</span><span class="st"> </span><span class="fl">1e-03</span>,</span>
+<span id="cb8-10"><a href="bcl6myc-de.html#cb8-10"></a>                    x<span class="op">$</span>gene_symbol, <span class="st">&quot;&quot;</span>)</span>
+<span id="cb8-11"><a href="bcl6myc-de.html#cb8-11"></a>  x<span class="op">$</span>comparison &lt;-<span class="st"> </span>comp</span>
+<span id="cb8-12"><a href="bcl6myc-de.html#cb8-12"></a>  <span class="kw">return</span>(x[,<span class="kw">c</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">6</span>,<span class="dv">15</span><span class="op">:</span><span class="dv">17</span>)])</span>
+<span id="cb8-13"><a href="bcl6myc-de.html#cb8-13"></a>}) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">bind_rows</span>()</span>
+<span id="cb8-14"><a href="bcl6myc-de.html#cb8-14"></a>(p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(plotdat, <span class="kw">aes</span>(<span class="dt">x =</span> L2FC, <span class="dt">y =</span> <span class="op">-</span><span class="kw">log10</span>(qval))) <span class="op">+</span></span>
+<span id="cb8-15"><a href="bcl6myc-de.html#cb8-15"></a><span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="op">-</span><span class="kw">log10</span>(<span class="fl">0.05</span>), <span class="dt">color =</span> <span class="st">&quot;firebrick&quot;</span>, <span class="dt">alpha =</span> <span class="fl">.2</span>, <span class="dt">lty=</span><span class="dv">2</span>) <span class="op">+</span></span>
+<span id="cb8-16"><a href="bcl6myc-de.html#cb8-16"></a><span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="dv">0</span>, <span class="dt">color =</span> <span class="st">&quot;firebrick&quot;</span>, <span class="dt">alpha =</span> <span class="fl">.2</span>, <span class="dt">lty=</span><span class="dv">2</span>) <span class="op">+</span></span>
+<span id="cb8-17"><a href="bcl6myc-de.html#cb8-17"></a><span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">col=</span>col), <span class="dt">alpha =</span> <span class="fl">.5</span>, <span class="dt">size=</span><span class="dv">1</span>) <span class="op">+</span></span>
+<span id="cb8-18"><a href="bcl6myc-de.html#cb8-18"></a><span class="st">  </span>ggrepel<span class="op">::</span><span class="kw">geom_text_repel</span>(<span class="kw">aes</span>(<span class="dt">label =</span> label)) <span class="op">+</span></span>
+<span id="cb8-19"><a href="bcl6myc-de.html#cb8-19"></a><span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span>comparison, <span class="dt">nrow =</span> <span class="dv">3</span>, <span class="dt">scales =</span> <span class="st">&quot;free_y&quot;</span>) <span class="op">+</span></span>
+<span id="cb8-20"><a href="bcl6myc-de.html#cb8-20"></a><span class="st">  </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;firebrick4&quot;</span>,<span class="st">&quot;grey40&quot;</span>,<span class="st">&quot;steelblue4&quot;</span>)) <span class="op">+</span></span>
+<span id="cb8-21"><a href="bcl6myc-de.html#cb8-21"></a><span class="st">  </span><span class="kw">scale_x_continuous</span>(<span class="dt">name =</span> <span class="st">&quot;Fold change (log2)&quot;</span>) <span class="op">+</span></span>
+<span id="cb8-22"><a href="bcl6myc-de.html#cb8-22"></a><span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">name =</span> <span class="st">&quot;Significance (-log10 p-value)&quot;</span>) <span class="op">+</span></span>
+<span id="cb8-23"><a href="bcl6myc-de.html#cb8-23"></a><span class="st">  </span><span class="kw">theme</span>(<span class="dt">text =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">14</span>, <span class="dt">color =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">family =</span> <span class="st">&quot;Arial&quot;</span>),</span>
+<span id="cb8-24"><a href="bcl6myc-de.html#cb8-24"></a>        <span class="dt">axis.text =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">11</span>, <span class="dt">color =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">family =</span> <span class="st">&quot;Arial&quot;</span>),</span>
+<span id="cb8-25"><a href="bcl6myc-de.html#cb8-25"></a>        <span class="dt">panel.grid =</span> <span class="kw">element_blank</span>(),</span>
+<span id="cb8-26"><a href="bcl6myc-de.html#cb8-26"></a>        <span class="dt">panel.background =</span> <span class="kw">element_blank</span>(),</span>
+<span id="cb8-27"><a href="bcl6myc-de.html#cb8-27"></a>        <span class="dt">panel.border =</span> <span class="kw">element_rect</span>(<span class="dt">color =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">fill =</span> <span class="ot">NA</span>),</span>
+<span id="cb8-28"><a href="bcl6myc-de.html#cb8-28"></a>        <span class="dt">strip.background =</span> <span class="kw">element_blank</span>(), </span>
+<span id="cb8-29"><a href="bcl6myc-de.html#cb8-29"></a>        <span class="dt">strip.text =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">12</span>, <span class="dt">color =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">family =</span> <span class="st">&quot;Arial&quot;</span>), </span>
+<span id="cb8-30"><a href="bcl6myc-de.html#cb8-30"></a>        <span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>))</span></code></pre></div>
+<p><img src="2020-03-11_BCL6_MYC_DE_files/figure-html/volcano-1.png" width="864" /></p>
+</div>
+<div id="session-info" class="section level2">
+<h2><span class="header-section-number">1.8</span> Session info</h2>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="bcl6myc-de.html#cb9-1"></a><span class="kw">sessionInfo</span>()</span></code></pre></div>
+<pre><code>## R version 4.0.3 (2020-10-10)
+## Platform: x86_64-apple-darwin17.0 (64-bit)
+## Running under: macOS Catalina 10.15.7
+## 
+## Matrix products: default
+## BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
+## 
+## locale:
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## 
+## attached base packages:
+## [1] parallel  stats4    stats     graphics  grDevices utils     datasets 
+## [8] methods   base     
+## 
+## other attached packages:
+##  [1] DT_0.17                     EnsDb.Mmusculus.v79_2.99.0 
+##  [3] ensembldb_2.14.0            AnnotationFilter_1.14.0    
+##  [5] GenomicFeatures_1.42.1      AnnotationDbi_1.52.0       
+##  [7] DESeq2_1.30.1               SummarizedExperiment_1.20.0
+##  [9] Biobase_2.50.0              MatrixGenerics_1.2.1       
+## [11] matrixStats_0.58.0          GenomicRanges_1.42.0       
+## [13] GenomeInfoDb_1.26.2         IRanges_2.24.1             
+## [15] S4Vectors_0.28.1            BiocGenerics_0.36.0        
+## [17] tximport_1.18.0             forcats_0.5.1              
+## [19] stringr_1.4.0               dplyr_1.0.4                
+## [21] purrr_0.3.4                 readr_1.4.0                
+## [23] tidyr_1.1.3                 tibble_3.1.0               
+## [25] ggplot2_3.3.3               tidyverse_1.3.0            
+## 
+## loaded via a namespace (and not attached):
+##   [1] colorspace_2.0-0         ellipsis_0.3.1           XVector_0.30.0          
+##   [4] fs_1.5.0                 rstudioapi_0.13          farver_2.1.0            
+##   [7] ggrepel_0.9.1            bit64_4.0.5              fansi_0.4.2             
+##  [10] lubridate_1.7.10         xml2_1.3.2               splines_4.0.3           
+##  [13] cachem_1.0.4             geneplotter_1.68.0       knitr_1.31              
+##  [16] jsonlite_1.7.2           Rsamtools_2.6.0          broom_0.7.5             
+##  [19] annotate_1.68.0          dbplyr_2.1.0             compiler_4.0.3          
+##  [22] httr_1.4.2               backports_1.2.1          lazyeval_0.2.2          
+##  [25] assertthat_0.2.1         Matrix_1.3-2             fastmap_1.1.0           
+##  [28] cli_2.3.1                htmltools_0.5.1.1        prettyunits_1.1.1       
+##  [31] tools_4.0.3              gtable_0.3.0             glue_1.4.2              
+##  [34] GenomeInfoDbData_1.2.4   rappdirs_0.3.3           Rcpp_1.0.6              
+##  [37] cellranger_1.1.0         jquerylib_0.1.3          vctrs_0.3.6             
+##  [40] Biostrings_2.58.0        svglite_2.0.0            rtracklayer_1.50.0      
+##  [43] crosstalk_1.1.1          xfun_0.21                rvest_0.3.6             
+##  [46] lifecycle_1.0.0          XML_3.99-0.5             zlibbioc_1.36.0         
+##  [49] scales_1.1.1             ProtGenerics_1.22.0      hms_1.0.0               
+##  [52] RColorBrewer_1.1-2       yaml_2.2.1               curl_4.3                
+##  [55] memoise_2.0.0            sass_0.3.1               biomaRt_2.46.3          
+##  [58] stringi_1.5.3            RSQLite_2.2.3            highr_0.8               
+##  [61] genefilter_1.72.1        BiocParallel_1.24.1      systemfonts_1.0.1       
+##  [64] rlang_0.4.10             pkgconfig_2.0.3          bitops_1.0-6            
+##  [67] evaluate_0.14            lattice_0.20-41          labeling_0.4.2          
+##  [70] htmlwidgets_1.5.3        GenomicAlignments_1.26.0 bit_4.0.4               
+##  [73] tidyselect_1.1.0         magrittr_2.0.1           bookdown_0.21           
+##  [76] R6_2.5.0                 generics_0.1.0           DelayedArray_0.16.2     
+##  [79] DBI_1.1.1                pillar_1.5.0             haven_2.3.1             
+##  [82] withr_2.4.1              survival_3.2-7           RCurl_1.98-1.2          
+##  [85] modelr_0.1.8             crayon_1.4.1             utf8_1.1.4              
+##  [88] BiocFileCache_1.14.0     rmarkdown_2.7            progress_1.2.2          
+##  [91] locfit_1.5-9.4           grid_4.0.3               readxl_1.3.1            
+##  [94] blob_1.2.1               webshot_0.5.2            reprex_1.0.0            
+##  [97] digest_0.6.27            xtable_1.8-4             openssl_1.4.3           
+## [100] munsell_0.5.0            viridisLite_0.3.0        kableExtra_1.3.4        
+## [103] bslib_0.2.4              askpass_1.1</code></pre>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+
+<a href="icn1-im-de.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": null,
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "subsection",
+"scroll_highlight": true
+},
+"toolbar": {
+"position": "fixed"
+},
+"search": true,
+"info": true
+});
+});
+</script>
+
+</body>
+
+</html>

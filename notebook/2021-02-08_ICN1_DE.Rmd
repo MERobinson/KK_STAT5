@@ -1,0 +1,268 @@
+# ICN1 IM DE
+
+## Background
+
+To determine whether transcriptional changes associated with the Myc-to-Bcl6 transition observed in mouse pre-B cells (both STAT5-CA/YF and dual-reporter assays) are conserved in human, patient derived xenograft cells ICN1 were treated with 5uM IM for 5h.   
+
+## Setup
+```{r icn1_setup, warning=F, message=F}
+# load libraries
+library(tidyverse)
+library(tximport)
+library(DESeq2)
+library(openxlsx)
+library(DT)
+library(EnsDb.Hsapiens.v86)
+txdb <- EnsDb.Hsapiens.v86
+  
+# make tx2gene
+k <- keys(txdb, keytype = "TXID")
+tx2gene <- select(txdb, k, "GENEID", "TXID")
+```
+
+## Sample Info
+```{r icn1_smi, warning=F, message=F}
+files <- list.files("../processed_data/RNAseq/ICN1_IM_salmon", pattern = "quant.sf", 
+                    recursive = T, full.names = T)
+pattern <- "^.+(ICN1)_(Imatinib|veh).*_(rep[0-9])/quant.sf$"
+smi <- data.frame(sample_id = sub(pattern, "\\1_\\2_\\3",files),
+                  condition = sub(pattern, "\\2",files),
+                  replicate = sub(pattern, "\\3",files), 
+                  file = files)
+names(files) <- smi$sample_id
+rownames(smi) <- smi$sample_id
+DT::datatable(smi, escape  = F, rownames = F,
+                colnames = c("Sample ID", "Condition", "Replicate", "File Path"),
+                options = list(
+                  columnDefs = list(list(
+                        targets = 3,
+                        render = JS(
+                          "function(data, type, row, meta) {",
+                          "return type === 'display' && data.length > 35 ?",
+                          "'<span title=\"' + data + '\">' + data.substr(0, 35) + '...</span>' : data;",
+                          "}")))
+                ), callback = JS('table.page(3).draw(false);'))
+```
+
+## Load and preprocess counts
+```{r icn1_dds, warning=F, message=F, eval=F}
+txi <- tximport(files, type = "salmon", tx2gene = tx2gene, ignoreTxVersion = T)
+dds <- DESeqDataSetFromTximport(txi, colData = smi,
+                                design = ~condition)
+dds <- dds[rowMeans(counts(dds)) > 5, ]
+dds <- DESeq(dds)
+saveRDS(dds, "../processed_data/RNAseq/ICN1_IM_dds.2021-02-08.rds")
+```
+
+## Differential Expression
+```{r icn1_de, warning=F, message=F}
+dds <- readRDS("../processed_data/RNAseq/ICN1_IM_dds.2021-02-08.rds")
+deres <- results(dds, contrast=c("condition", "Imatinib", "veh"))
+deres <- lfcShrink(dds, contrast=c("condition", "Imatinib", "veh"), 
+                   res = deres, type = "normal")
+summary(deres)
+```
+
+## Annotate and tidy
+```{r icn1_anno, warning=F, message=F}
+rlog <- rlog(dds)
+resdf <- as.data.frame(deres)
+resdf <- cbind(resdf, assay(rlog)[,c(3:4,1:2)])
+resdf$gene_symbol <- mapIds(txdb, keys = rownames(resdf), 
+                            keytype = "GENEID", column = "SYMBOL")
+resdf$ensembl_id <- rownames(resdf)
+resdf$baseMean <- log2(resdf$baseMean)
+resdf$av_VEH <- rowMeans(assay(rlog)[,c(3:4)])
+resdf$av_IM <- rowMeans(assay(rlog)[,c(1:2)])
+resdf <- resdf[order(resdf$pvalue), c(11:12,2,6,3,1,13:14,7:10)]
+colnames(resdf)[3:12] <- c("L2FC", "qval", "L2FC_SE", "av_expr","av_VEH","av_IM",
+                           "ICN1_VEH_r1", "ICN1_VEH_r2", "ICN1_IM_r1", "ICN1_IM_r2")
+saveRDS(resdf, "../processed_data/RNAseq/ICN1_IM_DE.2021-02-08.rds")
+write.xlsx(resdf, "../results/ICN1_IM_DE.2021-02-08.xlsx", 
+           row.names = F, firstRow=T, firstCol=T)
+resdf %>% 
+  dplyr::filter(qval < 0.05) %>% 
+  dplyr::select(gene_symbol, L2FC, qval, av_VEH, av_IM) %>%
+  mutate(gene_symbol = paste0('<a href=https://www.genecards.org/cgi-bin/carddisp.pl?gene=', 
+                              gene_symbol, '>', gene_symbol, '</a>'),
+         L2FC = round(L2FC, 3),
+         qval = signif(qval, 3),
+         av_VEH = round(av_VEH, 3),
+         av_IM = round(av_IM, 3)) %>%
+  DT::datatable(escape  = F, rownames = F)
+```
+
+## Volano plot
+```{r icn1_volcano, warning=F, message=F, fig.width=5, fig.height=4.75}
+library(ggrepel)
+plotdat <- resdf
+plotdat$col <- "B"
+plotdat[which(plotdat$qval < 0.05 & plotdat$L2FC > 0.58),]$col <- "A"
+plotdat[which(plotdat$qval < 0.05 & plotdat$L2FC < -0.58),]$col <- "C"
+plotdat[which(plotdat$qval<1e-50),]$qval <- 1e-50
+goi <- c("EGR1", "DUSP6", "CISH", "HK1", "HK2", top_n(plotdat, 25, qval))
+plotdat$label <- ifelse(plotdat$gene_symbol %in% goi,
+                        plotdat$gene_symbol, "")
+(p <- ggplot(plotdat, aes (x = L2FC, y = -log10(qval))) +
+  geom_hline(yintercept = -log10(0.05), color = "firebrick", alpha = .2) +
+  geom_point(aes(col=col), alpha = .5) +
+  geom_text_repel(aes(label = label)) +
+  scale_color_manual(values = c("firebrick4","grey40","steelblue4")) +
+  scale_x_continuous(limits = c(-10,10), name = "Fold change (log2)") +
+  scale_y_continuous(name = "Significance (-log10 p-value)") +
+  theme(text = element_text(size = 14, color = "black", family = "Arial"),
+        axis.text = element_text(size = 11, color = "black", family = "Arial"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(color = "black", fill = NA),
+        strip.background = element_blank(), 
+        strip.text = element_text(size = 12, color = "black", family = "Arial"), 
+        legend.position = "none"))
+```
+
+## Full GSEA 
+
+Note: This analysis was run on all REACTOME, KEGG, MSigDB Hallmark, and WIKIPATHWAY database gene sets (with some minor filtering for irrelevant sets). This is useful for data exploration but will inflate q-value/padj simply due to the large number of tests performed, hence these results should be used to identify potentially interesting pathways before performing more selective enrichment testing for more appropriate statistical values.
+
+```{r icn1_gseafull, warning=F, fig.width=9, fig.height=5}
+library(msigdbr)
+library(fgsea)
+msig <- rbind(msigdbr(species = "Homo sapiens", category = "H"),
+              msigdbr(species = "Homo sapiens", category = "C2", subcategory = "CP:REACTOME"),
+              msigdbr(species = "Homo sapiens", category = "C2", subcategory = "CP:KEGG"),
+              msigdbr(species = "Homo sapiens", category = "C5")) 
+gs <- split(msig$gene_symbol, msig$gs_name)
+internal_gs <- readRDS("../../resources/public_genesets_Hs.rds")
+gs <- c(gs, internal_gs)
+gs <- gs[!grepl(paste0("sperm|xeno|graft|naba|spinal|neuro|sclerosis",
+                       "|tion_of_hscs|photo|leish|diabetes|lupus",
+                       "|staph|syndrome|myo|nicotin|asthma|thyroid_stim",
+                       "|gastrin|alcohol|nutrient|carcinoma",
+                       "|metapathway|amyloid|fusion_mutants|circadian"),
+                names(gs), ignore.case = T)]
+gl <- resdf$L2FC
+names(gl) <- resdf$gene_symbol
+gl <- gl[!is.na(names(gl)) & names(gl) != "" & !is.na(gl) & is.finite(gl)]
+gl <- gl[order(-gl)]
+gl <- gl[!duplicated(names(gl))]
+gseres <- fgseaSimple(pathways = gs, stats = gl, 
+                      nperm = 1000, minSize = 10, maxSize = 500) %>%
+  dplyr::filter(lengths(leadingEdge) > 3) %>%
+  arrange(pval)
+write.xlsx(gseres, "../results/ICN1_IM_DE_fullGSEA.2021-02-08.xlsx", 
+           row.names = F, firstRow=T, firstCol=T)
+plotpaths <- c(dplyr::filter(gseres, NES > 0) %>% top_n(5, -pval) %>% .$pathway,
+               rev(dplyr::filter(gseres, NES < 0) %>% top_n(5, -pval) %>% .$pathway))
+plotGseaTable(gs[plotpaths], gl, gseres, gseaParam = 0.25)
+gseres %>% 
+  dplyr::filter(pval < 0.1) %>% 
+  dplyr::select(pathway, pval, padj, NES, leadingEdge) %>%
+  mutate(pathway = ifelse(pathway %in% names(internal_gs), pathway,
+                          paste0('<a href=https://www.gsea-msigdb.org/gsea/msigdb/cards/', 
+                              pathway, '.html>', substr(pathway, 0,30), '</a>')),
+         pval = round(pval, 5),
+         padj = round(padj, 5),
+         NES = round(NES, 3),
+         leadingEdge = sapply(leadingEdge, function(x) paste0(x, collapse = ","))) %>%
+  DT::datatable(escape  = F, rownames = F,
+                colnames = c("Pathway","pval","qval","NES","Enriched Genes"),
+                options = list(
+                  scrollX = TRUE,
+                  columnDefs = list(list(
+                        targets = 4,
+                        render = JS(
+                          "function(data, type, row, meta) {",
+                          "return type === 'display' && data.length > 30 ?",
+                          "'<span title=\"' + data + '\">' + data.substr(0, 30) + '...</span>' : data;",
+                          "}")))
+                ), callback = JS('table.page(3).draw(false);'))
+```
+
+## Select GSEA
+```{r icn1_poi}
+poi <- c("KEGG_JAK_STAT_SIGNALING_PATHWAY",
+         "HALLMARK_MYC_TARGETS_V2",
+         "HALLMARK_KRAS_SIGNALING_DN",
+         "HALLMARK_KRAS_SIGNALING_UP",
+         "HALLMARK_UNFOLDED_PROTEIN_RESPONSE",
+         "REACTOME_ONCOGENE_INDUCED_SENESCENCE",
+         "GO_PROTEIN_LOCALIZATION_TO_PHAGOPHORE_ASSEMBLY_SITE",
+         "GO_PHAGOPHORE_ASSEMBLY_SITE_MEMBRANE",
+         "REACTOME_INTRA_GOLGI_TRAFFIC",
+         "REACTOME_ATF6_ATF6_ALPHA_ACTIVATES_CHAPERONE_GENES",
+         "HALLMARK_GLYCOLYSIS",
+         "Prdm1_repressed_preB")
+```
+
+```{r icn1_gseasub, warning=F, eval=F}
+gsub <- gs[names(gs) %in% poi]
+gseres <- fgseaSimple(pathways = gsub, stats = gl,
+                      nperm = 10000) %>% arrange(pval)
+saveRDS(gseres, "../processed_data/RNAseq/ICN1_IM_DE_subGSEA.2021-02-08.rds")
+write.xlsx(gseres, "../results/ICN1_IM_DE_subGSEA.2021-02-08.xlsx", 
+           row.names = F, firstRow=T, firstCol=T)
+```
+
+```{r icn1_gseasub_table, warning=F}
+gseres <- readRDS("../processed_data/RNAseq/ICN1_IM_DE_subGSEA.2021-02-08.rds")
+gseres %>% 
+  dplyr::select(pathway, pval, padj, NES, leadingEdge) %>%
+  mutate(pathway = ifelse(pathway %in% names(internal_gs), pathway,
+                          paste0('<a href=https://www.gsea-msigdb.org/gsea/msigdb/cards/', 
+                                 pathway, '.html>', substr(pathway, 0,30), '</a>')),
+         pval = round(pval, 5),
+         padj = round(padj, 5),
+         NES = round(NES, 3),
+         leadingEdge = sapply(leadingEdge, function(x) paste0(x, collapse = ","))) %>%
+  DT::datatable(escape  = F, rownames = F,
+                colnames = c("Pathway","pval","qval","NES","Enriched Genes"),
+                options = list(
+                  scrollX = TRUE,
+                  columnDefs = list(list(
+                        targets = 4,
+                        render = JS(
+                          "function(data, type, row, meta) {",
+                          "return type === 'display' && data.length > 30 ?",
+                          "'<span title=\"' + data + '\">' + data.substr(0, 30) + '...</span>' : data;",
+                          "}")))
+                ), callback = JS('table.page(3).draw(false);'))
+```
+
+## GSEA plots
+```{r icn1_gseasub_plots, warning=F, message=F, fig.width=8, fig.height=4.5}
+source("../../resources/fsea.R")
+library(rvg)
+library(officer)
+pl <- lapply(gseres$pathway, function(x) {
+  plot_fgsea(gseres, gl, gs, x) + ggtitle(x) + 
+    theme(plot.title = element_text(size=9))
+})
+cowplot::plot_grid(plotlist = pl[1:9],
+                   align = "vh", ncol = 3)
+```
+
+```{r icn1_gseasub_plotsout, warning=F, message=F, eval=F}
+plotidx <- ceiling(1:length(pl) / 3)
+ppt <- read_pptx()
+lapply(unique(plotidx), function(idx) {
+  p <- cowplot::plot_grid(plotlist = pl[which(plotidx==idx)],
+                          align = "vh", ncol = 3)
+  add_slide(x = ppt, layout = "Title and Content", master = "Office Theme") %>%
+    ph_with(value = dml(ggobj = p),
+            location = ph_location(height = 2, width = 9,
+                                   left = 0.25, top = 0.5),
+            bg = "transparent")
+})
+print(ppt, target="../img/ICN1_IM_DE_subGSEAplots.2021-02-08.pptx")
+```
+
+## Downloads
+- <a href="../results/ICN1_IM_DE.2021-02-08.xlsx" download>Differential expression results</a> (xlsx). 
+- <a href="../results/ICN1_IM_DE_fullGSEA.2021-02-08.xlsx" download>Full GSEA results</a> for exploratory analysis (xlsx). 
+- <a href="../results/ICN1_IM_DE_subGSEA.2021-02-08.xlsx" download>GSEA subset</a> for stats on selected pathways (xlsx).
+- <a href="../img/ICN1_IM_DE_subGSEAplots.2021-02-08.pptx" download>GSEA plots</a> (vecotorised pptx).
+
+## Session info
+```{r sessioninfo}
+sessionInfo()
+```

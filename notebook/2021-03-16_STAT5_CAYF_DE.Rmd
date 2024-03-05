@@ -1,0 +1,216 @@
+# STAT5-CA/YF DE
+
+## HPC preprocesing
+```{bash, eval=F}
+for dir in raw_data/STAT5_CAYF_LK1363_RNAseq/*; do name=$(basename ${dir}); fq=$(ls ${dir}/*.fastq.gz | tr "\n" " " | sed "s/ /,/g" | sed "s/,$//g"); bash scripts/quant_rna_salmon.sh -r1 ${fq} --index resources/GRCm38/salmon_index_GRCm38_vM24 --name ${name} --outdir processed_data/STAT5_CAYF_LK1363_salmon --logdir logs; done
+
+for dir in raw_data/STAT5_CAYF_LK1363_RNAseq/*; do name=$(basename ${dir}); fq=$(ls ${dir}/*.fastq.gz | tr "\n" " " | sed "s/ /,/g" | sed "s/,$//g"); bash scripts/align_fastq_star.sh --twopass on  -fq1 ${fq} --index resources/GRCm38/star_index_GRCm38_vM25 --name ${name} --outdir processed_data/STAT5_CAYF_LK1363_star --logdir logs; done
+```
+
+## Setup
+```{r dr_setup, warning=F, message=F}
+# load libraries
+library(tidyverse)
+library(tximport)
+library(DESeq2)
+library(openxlsx)
+library(DT)
+library(EnsDb.Mmusculus.v79)
+txdb <- EnsDb.Mmusculus.v79
+  
+# make tx2gene
+k <- keys(txdb, keytype = "TXID")
+tx2gene <- select(txdb, k, "GENEID", "TXID")
+```
+
+## Sample Info
+```{r dr_smi, warning=T, message=T}
+files <- list.files("../processed_data/RNAseq/STAT5_CAYF_LK1363_salmon", pattern = "quant.sf", 
+                    recursive = T, full.names = T)
+files <- files[!grepl("EV", files)]
+pattern <- "^.+/ALL_((STAT5_CA|STAT5_YF)_([0-9]+h))/quant.sf$"
+smi <- data.frame(sample_id = sub(pattern, "\\1",files),
+                  condition = sub(pattern, "\\2",files),
+                  timepoint = sub(pattern, "\\3",files),
+                  path = files)
+smi$timepoint <- factor(smi$timepoint, levels = c("0h","03h","06h","24h"))
+smi <- smi %>% group_by(condition) %>% arrange(timepoint, .by_group=T)
+files <- smi$path
+names(files) <- smi$sample_id
+smi %>% arrange(sample_id) %>% 
+  DT::datatable(escape  = F, rownames = F,
+                colnames = c("Sample ID", "Condition", "Replicate", "File Path"),
+                options = list(
+                  scrollX = TRUE,
+                  columnDefs = list(list(
+                        targets = 3,
+                        render = JS(
+                          "function(data, type, row, meta) {",
+                          "return type === 'display' && data.length > 35 ?",
+                          "'<span title=\"' + data + '\">' + data.substr(0, 35) + '...</span>' : data;",
+                          "}")))
+                ), callback = JS('table.page(3).draw(false);'))
+```
+
+## Load and preprocess counts
+```{r dr_dds, warning=F, message=F, eval=F}
+txi <- tximport(files, type = "salmon", tx2gene = tx2gene, ignoreTxVersion = T)
+dds <- DESeqDataSetFromTximport(txi, colData = smi,
+                                design = ~condition+timepoint)
+dds <- dds[rowMeans(counts(dds)) > 5, ]
+dds <- DESeq(dds, test="LRT", reduced=~timepoint)
+saveRDS(dds, "../processed_data/RNAseq/STAT5_CAYF_timeseries_dds.2021-04-16.rds")
+```
+
+## Differential Expression
+```{r dr_de, warning=F, message=F, eval=F}
+deres <- results(dds)
+deres <- lfcShrink(dds, coef = "condition_STAT5_YF_vs_STAT5_CA",
+                   res = deres, type = "normal")
+```
+
+## Annotate and tidy
+```{r dr_anno, warning=F, message=F, eval=F}
+rlog <- rlog(dds)
+resdf <- as.data.frame(deres) %>%
+  mutate(gene_symbol = mapIds(txdb, keys = rownames(deres), 
+                            keytype = "GENEID", column = "SYMBOL"),
+         ensembl_id = rownames(deres),
+         baseMean = log2(baseMean),
+         .before=1)
+resdf <- cbind(resdf, assay(rlog))
+rownames(resdf) <- NULL
+colnames(resdf)[3:8] <- c("av_expr", "L2FC", "L2FC_SE", "LRT_stat", "pval", "qval")
+resdf <- resdf %>% arrange(pval)
+openxlsx::write.xlsx(resdf, "../results/STAT5_CAYF_timeseries_DEres.2021-04-16.xlsx", 
+                     overwrite = T, firstCol=T, firstRow=T) 
+saveRDS(resdf, "../processed_data/RNAseq/STAT5_CAYF_timeseries_deres.2021-04-16.rds")
+```
+
+## Volano plot
+```{r dr_volcano, warning=F, message=F, fig.width=9, fig.height=8}
+dds <- readRDS("../processed_data/RNAseq/STAT5_CAYF_timeseries_dds.2021-04-16.rds")
+deanno <- readRDS("../processed_data/RNAseq/STAT5_CAYF_timeseries_deres.2021-04-16.rds")
+goi <- c("Egr1", "Dusp6", "Cish", "Hk1", "Hk2", "Myc", "Bcl6", "Socs2", "Socs3",
+         "Ebf1", "Blnk", "Stat5a", "Stat5b")
+plotdat <- deanno %>%
+  mutate(col = ifelse(L2FC > 0.58 & qval < 0.05, "A",
+                      ifelse(L2FC < -0.58 & qval < 0.05, "C", "B")))
+topg <- top_n(plotdat, 20, -qval)$gene_symbol
+plotdat$label <- ifelse(plotdat$gene_symbol %in% c(topg, goi) & 
+                          plotdat$qval < 1e-03,
+                        plotdat$gene_symbol, "")
+p <- ggplot(plotdat, aes(x = L2FC, y = -log10(qval))) +
+  geom_hline(yintercept = -log10(0.05), color = "firebrick", alpha = .2, lty=2) +
+  geom_vline(xintercept = 0, color = "firebrick", alpha = .2, lty=2) +
+  geom_point(aes(col=col), alpha = .5, size=1) +
+  ggrepel::geom_text_repel(aes(label = label)) +
+  scale_color_manual(values = c("firebrick4","grey40","steelblue4")) +
+  scale_x_continuous(name = "Fold change (log2)") +
+  scale_y_continuous(name = "Significance (-log10 p-value)") +
+  theme(text = element_text(size = 14, color = "black", family = "Arial"),
+        axis.text = element_text(size = 11, color = "black", family = "Arial"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(color = "black", fill = NA),
+        strip.background = element_blank(), 
+        strip.text = element_text(size = 12, color = "black", family = "Arial"), 
+        legend.position = "none")
+ggsave(plot = p, filename = "../img/STAT5_CAYF_timeseries_volcano_plot.png", 
+       dpi=400, width=5.5, height=4, units = "in")
+p
+```
+
+## Full GSEA 
+
+Note: This analysis was run on all REACTOME, KEGG, MSigDB Hallmark, and WIKIPATHWAY database gene sets (with some minor filtering for irrelevant sets). This is useful for data exploration but will inflate q-value/padj simply due to the large number of tests performed, hence these results should be used to identify potentially interesting pathways before performing more selective enrichment testing for more appropriate statistical values.
+
+```{r dr_gseafull, warning=F}
+library(msigdbr)
+library(fgsea)
+msig <- rbind(msigdbr(species = "Mus musculus", category = "H"),
+              msigdbr(species = "Mus musculus", category = "C2", subcategory = "CP:REACTOME"),
+              msigdbr(species = "Mus musculus", category = "C2", subcategory = "CP:KEGG")) 
+gs <- split(msig$gene_symbol, msig$gs_name)
+internal_gs <- readRDS("../../resources/public_genesets_Mm.rds")
+gs <- c(gs, internal_gs)
+gs <- gs[!grepl(paste0("sperm|xeno|graft|naba|spinal|neuro|sclerosis",
+                       "|tion_of_hscs|photo|leish|diabetes|lupus|ebola",
+                       "|staph|syndrome|myo|nicotin|asthma|thyroid_stim",
+                       "|gastrin|alcohol|nutrient|carcinoma|muscle_contr",
+                       "|metapathway|amyloid|fusion_mutants|circadian"),
+                names(gs), ignore.case = T)]
+gl <- deanno %>%
+  dplyr::filter(!is.na(gene_symbol) & !is.na(L2FC) &
+                  !duplicated(gene_symbol)) %>%
+  arrange(-L2FC) %>%
+  dplyr::select("gene_symbol", "L2FC") %>% 
+  deframe()
+gseres <- fgseaSimple(pathways = gs, stats = gl, 
+              nperm = 1000, minSize = 10, maxSize = 500) %>%
+    dplyr::filter(lengths(leadingEdge) > 3) %>%
+    arrange(pval)
+gsedf <- as.data.frame(gseres)
+openxlsx::write.xlsx(gsedf, "../results/STAT5_CAYF_timeseries_fullGSEA.2021-04-16.xlsx", overwrite = T)
+gsedf %>% dplyr::filter(pval < 0.05) %>%
+  dplyr::select(pathway, NES, pval) %>%
+  mutate(NES = round(NES, 2),
+         pval = signif(pval, 2),
+         pathway = ifelse(pathway %in% names(internal_gs), pathway,
+                          paste0('<a href=https://www.gsea-msigdb.org/gsea/msigdb/cards/', 
+                                 pathway, '.html>', substr(pathway, 0,30), '</a>'))) %>%
+  DT::datatable(escape  = F, rownames = F,
+                options = list(
+                  scrollX = TRUE))
+```
+
+## Select GSEA
+```{r dr_poi}
+poi <- c("KEGG_JAK_STAT_SIGNALING_PATHWAY","HALLMARK_MYC_TARGETS_V2",
+         "HALLMARK_UNFOLDED_PROTEIN_RESPONSE","REACTOME_ONCOGENE_INDUCED_SENESCENCE",
+         "REACTOME_INTRA_GOLGI_TRAFFIC","REACTOME_AUTOPHAGY",
+         "REACTOME_ATF6_ATF6_ALPHA_ACTIVATES_CHAPERONE_GENES",
+         "HALLMARK_GLYCOLYSIS","HALLMARK_KRAS_SIGNALING_DN","HALLMARK_KRAS_SIGNALING_UP",
+         "Prdm1_repressed_proB","Prdm1_repressed_preB")
+```
+
+```{r dr_gseasub, warning=F, eval=F}
+gsub <- gs[names(gs) %in% poi]
+gseres <- fgseaSimple(pathways = gsub, stats = gl, 
+                      nperm = 10000, minSize = 10, maxSize = 500) %>%
+    arrange(pval)
+saveRDS(gseres, "../processed_data/RNAseq/STAT5_CAYF_timeseries_subGSEA.2021-04-16.rds")
+gsedf <- as.data.frame(gseres)
+openxlsx::write.xlsx(gsedf, "../results/STAT5_CAYF_timeseries_subGSEA.2021-04-16.xlsx",
+                     overwrite = T, firstCol=T, firstRow=T)
+```
+
+## GSEA plots
+```{r dr_gseasub_plots, warning=F, message=F, eval=T, fig.width=8, fig.height=5}
+source("../../resources/fsea.R")
+source("../../resources/pptx_plot_func.R")
+library(rvg)
+library(officer)
+library(cowplot)
+ppt <- read_pptx()
+pl <- lapply(poi, function(path) {
+  plot_fgsea(gseres, gl, gs, path) + 
+    ggtitle(path) + 
+    theme(plot.title = element_text(size=9.5))
+})
+cp <- cowplot::plot_grid(plotlist = pl, ncol=3, align="vh")
+gen_pptx(cp, "../img/STAT5_CAYF_timeseries_subGSEAplots.2021-04-16.pptx", 
+         height=6, width=9)
+cp
+```
+
+## Downloads
+- <a href="../results/STAT5_CAYF_timeseries_DEres.2021-04-16.xlsx" download>Differential expression results</a> (xlsx). 
+- <a href="../results/STAT5_CAYF_timeseries_fullGSEA.2021-04-16.xlsx" download>Full GSEA results</a> for exploratory analysis (xlsx). 
+- <a href="../results/STAT5_CAYF_timeseries_subGSEA.2021-04-16.xlsx" download>GSEA subset</a> for stats on selected pathways (xlsx).
+- <a href="../img/STAT5_CAYF_timeseries_subGSEAplots.2021-04-16.pptx" download>GSEA plots</a> (vecotorised pptx).
+
+## Session info
+```{r sessioninfo}
+sessionInfo()
+```

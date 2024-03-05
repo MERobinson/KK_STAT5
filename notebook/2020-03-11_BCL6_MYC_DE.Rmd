@@ -1,0 +1,305 @@
+# BCL6/MYC Dual Reporter DE
+
+## Background
+
+To characterise the transcriptional programs driven by MYC and BCL6 in B-cells, a dual reporter system was established with GFP-Myc and mCherry-BCL6 in normal mouse pre-B cultured in Il7, and pre-B trasnformed by either BCR-ABL1 or NRAS G12D. 
+
+Note: no mCherry+ population is observed in the BCR-ABL1 condition due to BA driving Myc program & thereby repressing Bcl6.
+
+## Setup
+```{r dr_setup, warning=F, message=F}
+# load libraries
+library(tidyverse)
+library(tximport)
+library(DESeq2)
+library(openxlsx)
+library(DT)
+library(EnsDb.Mmusculus.v79)
+txdb <- EnsDb.Mmusculus.v79
+  
+# make tx2gene
+k <- keys(txdb, keytype = "TXID")
+tx2gene <- select(txdb, k, "GENEID", "TXID")
+```
+
+## Sample Info
+```{r dr_smi, warning=T, message=T}
+files <- list.files("../processed_data/RNAseq/BCL6_MYC_salmon", pattern = "quant.sf", 
+                    recursive = T, full.names = T)
+pattern <- "^.+/XLR[0-9]+_(([A-Za-z]+)_([A-Za-z]+)_(rep[0-9]+))/quant.sf$"
+smi <- data.frame(sample_id = sub(pattern, "\\1",files),
+                  condition = sub(pattern, "\\2_\\3",files),
+                  replicate = sub(pattern, "\\4",files),
+                  path = files)
+names(files) <- smi$sample_id
+smi %>% arrange(sample_id) %>% 
+  DT::datatable(escape  = F, rownames = F,
+                colnames = c("Sample ID", "Condition", "Replicate", "File Path"),
+                options = list(
+                  scrollX = TRUE,
+                  columnDefs = list(list(
+                        targets = 3,
+                        render = JS(
+                          "function(data, type, row, meta) {",
+                          "return type === 'display' && data.length > 35 ?",
+                          "'<span title=\"' + data + '\">' + data.substr(0, 35) + '...</span>' : data;",
+                          "}")))
+                ), callback = JS('table.page(3).draw(false);'))
+```
+
+## Load and preprocess counts
+```{r dr_dds, warning=F, message=F, eval=F}
+txi <- tximport(files, type = "salmon", tx2gene = tx2gene, ignoreTxVersion = T)
+dds <- DESeqDataSetFromTximport(txi, colData = smi,
+                                design = ~condition)
+dds <- dds[rowMeans(counts(dds)) > 5, ]
+dds <- DESeq(dds)
+saveRDS(dds, "../processed_data/RNAseq/BCL6_MYC_dds.2020-03-11.rds")
+```
+
+## Differential Expression
+```{r dr_de, warning=F, message=F, eval=F}
+contrasts <- list(preB_GFP_vs_DN = "preB_GFPpos_vs_preB_DN",
+                  preB_Cherry_vs_DN = "preB_Cherrypos_vs_preB_DN",
+                  preB_GFP_vs_Cherry = "preB_GFPpos_vs_preB_Cherrypos",
+                  NRAS_GFP_vs_DN = "Nras_GFPpos_vs_Nras_DN",
+                  NRAS_Cherry_vs_DN = "Nras_Cherrypos_vs_Nras_DN",
+                  NRAS_GFP_vs_Cherry = "Nras_GFPpos_vs_Nras_Cherrypos",
+                  BCRABL_GFP_vs_DN = "BA_GFPpos_vs_BA_DN")
+deres <- lapply(contrasts, function(contrast) {
+  a <- sub("^(.+)_vs_(.+)$", "\\1", contrast) 
+  b <- sub("^(.+)_vs_(.+)$", "\\2", contrast)
+  res <- results(dds, contrast=c("condition", a, b))
+  lfcShrink(dds, contrast = c("condition", a, b), 
+            res = res, type = "normal")
+})
+```
+
+## Annotate and tidy
+```{r dr_anno, warning=F, message=F, eval=F}
+rlog <- rlog(dds)
+genesymb <- mapIds(txdb, keys = rownames(deres[[1]]), 
+                   keytype = "GENEID", column = "SYMBOL")
+wb <- createWorkbook()
+deanno <- lapply(names(contrasts), function(contrast) {
+  resdf <- as.data.frame(deres[[contrast]])
+  a <- sub("^(.+)_vs_(.+)$", "\\1", contrasts[[contrast]]) 
+  b <- sub("^(.+)_vs_(.+)$", "\\2", contrasts[[contrast]])
+  resdf <- cbind(resdf, assay(rlog)[, c(grep(b, colnames(rlog)),
+                                        grep(a, colnames(rlog)))])
+  resdf$gene_symbol <- genesymb
+  resdf$ensembl_id <- rownames(resdf)
+  resdf$baseMean <- log2(resdf$baseMean)
+  resdf[,paste0("av_", b)] <- rowMeans(assay(rlog)[, grep(b, colnames(rlog))])
+  resdf[,paste0("av_", a)] <- rowMeans(assay(rlog)[, grep(a, colnames(rlog))])
+  resdf <- resdf[order(resdf$pvalue), c(13:14,2,6,3,1,15:16,7:12)]
+  colnames(resdf)[3:6] <- c("L2FC","qval","L2FC_SE","av_expr")
+  addWorksheet(wb, sheetName = contrast)
+  writeData(wb, resdf, sheet = contrast, rowNames = F)
+  freezePane(wb, sheet = contrast, firstRow = TRUE, firstCol = TRUE) 
+  return(resdf)
+})
+names(deanno) <- names(contrasts)
+saveWorkbook(wb, "../results/BCL6_MYC_DE.2020-03-11.xlsx", overwrite = T) 
+saveRDS(deanno, "../processed_data/RNAseq/BCL6_MYC_DE.2020-03-11.rds")
+```
+
+```{r dr_summarise_de}
+dds <- readRDS("../processed_data/RNAseq/BCL6_MYC_dds.2020-03-11.rds")
+deanno <- readRDS("../processed_data/RNAseq/BCL6_MYC_DE.2020-03-11.rds")
+lapply(names(deanno), function(x) {
+  y <- as.data.frame(deanno[[x]]) %>% dplyr::filter(qval < 0.05)
+  data.frame(condition = x,
+             upreg = y %>% dplyr::filter(L2FC > 1) %>% nrow(),
+             dnreg = y %>% dplyr::filter(L2FC < -1) %>% nrow())
+}) %>% bind_rows() %>% kableExtra::kable()
+```
+
+## Volano plot
+```{r dr_volcano, warning=F, message=F, fig.width=9, fig.height=8}
+goi <- c("Egr1", "Dusp6", "Cish", "Hk1", "Hk2")
+plotdat <- lapply(names(deanno), function(comp) {
+  x <- deanno[[comp]]
+  x$col <- "B"
+  x[which(x$qval < 0.05 & x$L2FC > 0.58),]$col <- "A"
+  x[which(x$qval < 0.05 & x$L2FC < -0.58),]$col <- "C"
+  if (any(x$qval < 1e-150, na.rm = T)) x[which(x$qval<1e-150),]$qval <- 1e-150
+  topg <- top_n(x, 10, -qval)$gene_symbol
+  x$label <- ifelse(x$gene_symbol %in% c(topg, goi) & x$qval < 1e-03,
+                    x$gene_symbol, "")
+  x$comparison <- comp
+  return(x[,c(1:6,15:17)])
+}) %>% bind_rows()
+(p <- ggplot(plotdat, aes(x = L2FC, y = -log10(qval))) +
+  geom_hline(yintercept = -log10(0.05), color = "firebrick", alpha = .2, lty=2) +
+  geom_vline(xintercept = 0, color = "firebrick", alpha = .2, lty=2) +
+  geom_point(aes(col=col), alpha = .5, size=1) +
+  ggrepel::geom_text_repel(aes(label = label)) +
+  facet_wrap(~comparison, nrow = 3, scales = "free_y") +
+  scale_color_manual(values = c("firebrick4","grey40","steelblue4")) +
+  scale_x_continuous(name = "Fold change (log2)") +
+  scale_y_continuous(name = "Significance (-log10 p-value)") +
+  theme(text = element_text(size = 14, color = "black", family = "Arial"),
+        axis.text = element_text(size = 11, color = "black", family = "Arial"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(color = "black", fill = NA),
+        strip.background = element_blank(), 
+        strip.text = element_text(size = 12, color = "black", family = "Arial"), 
+        legend.position = "none"))
+```
+
+## Full GSEA 
+
+Note: This analysis was run on all REACTOME, KEGG, MSigDB Hallmark, and WIKIPATHWAY database gene sets (with some minor filtering for irrelevant sets). This is useful for data exploration but will inflate q-value/padj simply due to the large number of tests performed, hence these results should be used to identify potentially interesting pathways before performing more selective enrichment testing for more appropriate statistical values.
+
+```{r dr_gseafull, warning=F}
+library(msigdbr)
+library(fgsea)
+msig <- rbind(msigdbr(species = "Mus musculus", category = "H"),
+              msigdbr(species = "Mus musculus", category = "C2", subcategory = "CP:REACTOME"),
+              msigdbr(species = "Mus musculus", category = "C2", subcategory = "CP:KEGG"),
+              msigdbr(species = "Mus musculus", category = "C5"))
+gs <- split(msig$gene_symbol, msig$gs_name)
+internal_gs <- readRDS("../../resources/public_genesets_Mm.rds")
+gs <- c(gs, internal_gs)
+gs <- gs[!grepl(paste0("sperm|xeno|graft|naba|spinal|neuro|sclerosis",
+                       "|tion_of_hscs|photo|leish|diabetes|lupus|ebola",
+                       "|staph|syndrome|myo|nicotin|asthma|thyroid_stim",
+                       "|gastrin|alcohol|nutrient|carcinoma|muscle_contr",
+                       "|metapathway|amyloid|fusion_mutants|circadian"),
+                names(gs), ignore.case = T)]
+gl <- lapply(deanno, function(x) {
+  tmp <- x$L2FC
+  names(tmp) <- x$gene_symbol
+  tmp <- tmp[!is.na(names(tmp)) & names(tmp) != "" & !is.na(tmp) & is.finite(tmp)]
+  tmp <- tmp[order(-tmp)]
+  tmp[!duplicated(names(tmp))]
+})
+gseres <- lapply(gl, function(x) {
+  fgseaSimple(pathways = gs, stats = x, 
+              nperm = 1000, minSize = 10, maxSize = 500) %>%
+    dplyr::filter(lengths(leadingEdge) > 3) %>%
+    arrange(pval)
+})
+wb <- createWorkbook()
+lapply(names(gseres), function(contrast) {
+  gse <- as.data.frame(gseres[[contrast]])
+  addWorksheet(wb, sheetName = contrast)
+  writeData(wb, gse, sheet = contrast, rowNames = F)
+  freezePane(wb, sheet = contrast, firstRow = TRUE, firstCol = TRUE)
+  return(NULL)
+})
+saveWorkbook(wb, "../results/BCL6_MYC_DE_fullGSEA.2020-03-11.xlsx", overwrite = T)
+lapply(names(gseres), function(x) {
+  tmp <- gseres[[x]] %>% dplyr::filter(pval < 0.1) %>% dplyr::select(pathway, NES)
+  tmp[,2] <- round(tmp[,2], 3)
+  colnames(tmp)[2] <- x
+  return(tmp) }) %>% 
+  Reduce(f = function(x,y) { merge(x, y, by="pathway") }) %>%
+  arrange(-apply(., 1, var)) %>%
+  mutate(pathway = ifelse(pathway %in% names(internal_gs), pathway,
+                          paste0('<a href=https://www.gsea-msigdb.org/gsea/msigdb/cards/', 
+                                 pathway, '.html>', substr(pathway, 0,30), '</a>'))) %>%
+  DT::datatable(escape  = F, rownames = F,
+                options = list(
+                  scrollX = TRUE))
+```
+
+## Select GSEA
+```{r dr_poi}
+poi <- c("KEGG_JAK_STAT_SIGNALING_PATHWAY",
+         "HALLMARK_MYC_TARGETS_V2",
+         "HALLMARK_UNFOLDED_PROTEIN_RESPONSE",
+         "REACTOME_ONCOGENE_INDUCED_SENESCENCE",
+         "REACTOME_INTRA_GOLGI_TRAFFIC",
+         "GO_PROTEIN_LOCALIZATION_TO_PHAGOPHORE_ASSEMBLY_SITE",
+         "GO_PHAGOPHORE_ASSEMBLY_SITE_MEMBRANE",
+         "REACTOME_ATF6_ATF6_ALPHA_ACTIVATES_CHAPERONE_GENES",
+         "HALLMARK_GLYCOLYSIS",
+         "HALLMARK_KRAS_SIGNALING_UP",
+         "Prdm1_repressed_preB")
+```
+
+```{r dr_gseasub, warning=F, eval=F}
+gsub <- gs[names(gs) %in% poi]
+gseres <- lapply(gl, function(x) {
+  fgseaSimple(pathways = gsub, stats = x, 
+              nperm = 10000, minSize = 10, maxSize = 500) %>%
+    arrange(pval)
+})
+saveRDS(gseres, "../processed_data/RNAseq/BCL6_MYC_DE_subGSEA.2020-03-11.rds")
+wb <- createWorkbook()
+null <- lapply(names(gseres), function(contrast) {
+  gse <- as.data.frame(gseres[[contrast]])
+  addWorksheet(wb, sheetName = contrast)
+  writeData(wb, gse, sheet = contrast, rowNames = F)
+  freezePane(wb, sheet = contrast, firstRow = TRUE, firstCol = TRUE) 
+})
+saveWorkbook(wb, "../results/BCL6_MYC_DE_subGSEA.2020-03-11.xlsx", overwrite = T)
+```
+
+```{r dr_gseasub_table, warning=F, fig.width=8, fig.height=7}
+gseres <- readRDS("../processed_data/RNAseq/BCL6_MYC_DE_subGSEA.2020-03-11.rds")
+lapply(names(gseres), function(x) {
+  gseres[[x]] %>% 
+    mutate(pvaltxt = ifelse(padj < 0.001, "***", 
+                            ifelse(padj < 0.01, "**",
+                              ifelse(padj < 0.05, "*", "-"))),
+           cond = x, 
+           score = -log10(padj)*NES) %>%
+    dplyr::select(pathway, score, pvaltxt, cond) }) %>% 
+  bind_rows() %>% 
+  mutate(cond=factor(cond, levels=unique(cond))) %>%
+  ggplot(aes(x=cond, y=pathway, fill=score, label=pvaltxt)) +
+  geom_tile() +
+  geom_text() +
+  scale_x_discrete(expand=c(0,0), name="") +
+  scale_y_discrete(expand=c(0,0), name="") + 
+  scale_fill_gradient2(low="steelblue4", mid="white", high="firebrick4") +
+  theme_bw(base_size = 12, base_family = "Arial") +
+  theme(panel.background = element_blank(),
+        panel.border = element_rect(color="black", fill=NA),
+        axis.text.x = element_text(angle=45, hjust=1),
+        axis.ticks = element_blank(),
+        legend.position = "none")
+```
+
+## GSEA plots
+```{r dr_gseasub_plots, warning=F, message=F, eval=T, fig.width=8, fig.height=5}
+source("../../resources/fsea.R")
+library(rvg)
+library(officer)
+library(cowplot)
+ppt <- read_pptx()
+pl <- lapply(poi[!grepl("LIPO", poi)], function(path) {
+  pathplots <- lapply(names(gseres), function(contrast) {
+    plot_fgsea(gseres[[contrast]], gl[[contrast]], gs, path) + 
+      ggtitle(contrast) + 
+    theme(plot.title = element_text(size=9))
+  })
+  title <- ggdraw() + draw_label(path)
+  combined <- plot_grid(plotlist = pathplots, align = "vh", ncol = 3)
+  p <- plot_grid(title, combined, ncol = 1, rel_heights = c(0.05, 1))
+  add_slide(x = ppt, layout = "Title and Content", master = "Office Theme") %>%
+    ph_with(value = dml(ggobj = p),
+            location = ph_location(height = 5, width = 9,
+                                   left = 0.25, top = 0.5),
+            bg = "transparent")
+  return(p)
+})
+names(pl) <- poi[!grepl("LIPO", poi)]
+print(ppt, target="../img/BCL6_MYC_DE_subGSEAplots.2020-03-11.pptx")
+pl$HALLMARK_UNFOLDED_PROTEIN_RESPONSE
+```
+
+## Downloads
+- <a href="../results/BCL6_MYC_DE.2020-03-11.xlsx" download>Differential expression results</a> (xlsx). 
+- <a href="../results/BCL6_MYC_DE_fullGSEA.2020-03-11.xlsx" download>Full GSEA results</a> for exploratory analysis (xlsx). 
+- <a href="../results/BCL6_MYC_DE_subGSEA.2020-03-11.xlsx" download>GSEA subset</a> for stats on selected pathways (xlsx).
+- <a href="../img/BCL6_MYC_DE_subGSEAplots.2020-03-11.pptx" download>GSEA plots</a> (vecotorised pptx).
+
+## Session info
+```{r sessioninfo}
+sessionInfo()
+```
